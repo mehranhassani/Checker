@@ -13,15 +13,14 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 
 
 public class Main {
-
 	//use ASTParse to parse string
 	static int OvercatchesCopunt=0;
 	static int FixmeCount=0;
 	static int EmptyCount=0;
-	
+
 	public static void parse(String str) 
 	{
-		ASTParser parser = ASTParser.newParser(AST.JLS8);
+		ASTParser parser = ASTParser.newParser(AST.JLS4);
 		parser.setSource(str.toCharArray());
 		parser.setKind(ASTParser.K_COMPILATION_UNIT);
 		final ArrayList <CatchClause> catches =new ArrayList<>();
@@ -38,17 +37,17 @@ public class Main {
 
 		});
 
-		
+
 		for (CatchClause c : catches){
 			if (c.getException().getType().toString().equalsIgnoreCase("Exception")){
 				System.out.println("Overcatch="+c.toString());
 				OvercatchesCopunt++;
-				}
+			}
 
 			if (c.getBody().statements().isEmpty()){
 				System.out.println("Empty Statment="+c.toString());
 				EmptyCount++;
-				}
+			}
 
 			int start = c.getStartPosition();
 			int end = start + c.getLength();
@@ -56,9 +55,40 @@ public class Main {
 			if (catchstring.toLowerCase().contains("todo")){
 				System.out.println("Todo or FIXME=" + c.toString());
 				FixmeCount++;
-				}
+			}
 		}
-		
+
+
+	}
+	public static String parseOneFile(String str) 
+	{
+		ASTParser parser = ASTParser.newParser(AST.JLS4);
+		parser.setSource(str.toCharArray());
+		parser.setKind(ASTParser.K_COMPILATION_UNIT);
+		final ArrayList <CatchClause> catches =new ArrayList<>();
+		final CompilationUnit cu = (CompilationUnit) parser.createAST(null);
+
+		cu.accept(new ASTVisitor() 
+		{
+			public boolean visit(CatchClause mycatch) 
+			{  
+				//System.out.println(mycatch.toString());
+				catches.add(mycatch);
+				return super.visit(mycatch);
+			}
+
+		});
+
+		String out = new String();
+		out = "";
+		for (CatchClause c : catches){
+
+			out += c.getException().getType().toString()+"<Split>";
+			out += c.getBody().toString();
+			out +="<Next>";
+
+		}
+		return out;
 
 	}
 
@@ -81,9 +111,8 @@ public class Main {
 	}
 
 	//loop directory to get file list
-	public static void ParseFilesInDir() throws IOException{
-		File dirs = new File(".");
-		String dirPath = dirs.getCanonicalPath() + File.separator+"Test"+File.separator;
+	public static void ParseFilesInDir(String path) throws IOException{
+		String dirPath = path;
 		ArrayList<File> files = new ArrayList<>();
 		listf(dirPath,files);
 		String filePath = null;
@@ -91,10 +120,10 @@ public class Main {
 			filePath = f.getAbsolutePath();
 			if(f.isFile()){
 				String c =readFileToString(filePath);
-				parse(c);
+				System.out.println(parseOneFile(c));
 			}
 		}
-		System.out.println("Todo or FIXME= "+FixmeCount+" Empty Statment="+EmptyCount+" Overcatch= "+OvercatchesCopunt);
+
 	}
 
 	public static void listf(String directoryName, ArrayList<File> files) {
@@ -112,7 +141,8 @@ public class Main {
 	}
 
 	public static void main(String[] args) throws IOException {
-		ParseFilesInDir();
+		//		ParseFilesInDir(args[0]);
+		parseOneFile(args[0]);
 	}
 
 }
