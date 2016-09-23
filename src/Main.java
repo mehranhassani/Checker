@@ -84,7 +84,8 @@ public class Main {
 		for (CatchClause c : catches){
 
 			out += c.getException().getType().toString()+"<Split>";
-			out += c.getBody().toString();
+			out += c.getBody().toString()+"<Split>";
+			out += c.getException().getName().toString();
 			out +="<Next>";
 
 		}
@@ -120,7 +121,11 @@ public class Main {
 			filePath = f.getAbsolutePath();
 			if(f.isFile()){
 				String c =readFileToString(filePath);
-				System.out.println(parseOneFile(c));
+ 				System.out.println(parseOneFile(c));
+ 				if (parseOneFile(c) !=""){
+	 				System.out.println(filePath);
+	 				System.out.println("<EndOfFile>");
+ 				}
 			}
 		}
 
@@ -141,8 +146,10 @@ public class Main {
 	}
 
 	public static void main(String[] args) throws IOException {
-		//		ParseFilesInDir(args[0]);
-		parseOneFile(args[0]);
+//				ParseFilesInDir(args[0]);
+		String fileContents =  readFileToString(args[0]);
+		System.out.println(parseOneFile(fileContents));
+
 	}
 
 }
